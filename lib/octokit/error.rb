@@ -162,16 +162,22 @@ module Octokit
 
     def data
       @data ||=
-        if (body = @response[:body]) && !body.strip.empty? && body.start_with?("{")
-          if body.is_a?(String) &&
-             @response[:response_headers] &&
-             @response[:response_headers][:content_type] =~ /json/
+        if (body = @response[:body]) && !body.empty?
+          if valid_json_body?(body)
 
             Sawyer::Agent.serializer.decode(body)
           else
             body
           end
         end
+    end
+
+    def valid_json_body?(body)
+      body.is_a?(String) &&
+        @response[:response_headers] &&
+        @response[:response_headers][:content_type] =~ /json/ &&
+        !body.strip.empty? &&
+        body.start_with?("{")
     end
 
     def response_message
